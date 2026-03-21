@@ -127,7 +127,11 @@ export default function Booking() {
     setStatus({ type: '', msg: '' });
     try {
       const res = await axios.post(`${API}/booking/create`, form);
-      setStatus({ type: 'success', msg: `✅ Đặt phòng thành công! Mã phiếu: ${res.data.data.maPhieuDat}` });
+      const { maPhieuDat, maPhong } = res.data.data;
+      setStatus({ 
+        type: 'success', 
+        msg: `✅ Đặt phòng thành công! Mã phiếu: ${maPhieuDat}. Phòng đã gán: ${maPhong}` 
+      });
       // Reset form giữ lại region
       setForm((f) => ({ 
         ...f, provinceId: '', districtId: '', hotelId: '', maPhong: '', 

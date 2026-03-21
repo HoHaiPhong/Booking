@@ -169,7 +169,7 @@ router.post('/create', async (req, res) => {
         .query('INSERT INTO ChiTietDat (MaChiTietDat, MaPhieu, MaPhong, SoLuongPhong) VALUES (@maCT, @maPhieu, @maPhong, 1)');
 
       await transaction.commit();
-      res.json({ data: { maPhieuDat: maPhieu } });
+      res.json({ data: { maPhieuDat: maPhieu, maPhong: maPhong } });
     } catch (err) {
       if (transaction._isStarted) await transaction.rollback();
       throw err;

@@ -70,10 +70,22 @@ router.get('/:passport', async (req, res) => {
         const bookings = await pool.request()
           .input('passport', sql.VarChar, passport)
           .query(`
-            SELECT pd.MaPhieu, pd.NgayDen, pd.NgayDi, pd.TongTien, pd.TrangThai, ks.TenKS 
+            SELECT 
+              pd.MaPhieu, 
+              pd.NgayDen as NgayNhanPhong, 
+              pd.NgayDi as NgayTraPhong, 
+              pd.TongTien, 
+              pd.TrangThai, 
+              ks.TenKS,
+              p.MaPhong,
+              lp.TenLoai as LoaiPhong,
+              lp.GiaNiemYet as GiaPhong
             FROM PhieuDat pd
             JOIN KhachHang kh ON pd.MaKH = kh.MaKH
             JOIN KhachSan ks ON pd.MaKS = ks.MaKS
+            LEFT JOIN ChiTietDat ctd ON pd.MaPhieu = ctd.MaPhieu
+            LEFT JOIN Phong p ON ctd.MaPhong = p.MaPhong
+            LEFT JOIN LoaiPhong lp ON p.MaLoai = lp.MaLoai
             WHERE kh.Passport = @passport
             ORDER BY pd.NgayDen DESC
           `);
