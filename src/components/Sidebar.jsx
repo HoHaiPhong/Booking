@@ -4,8 +4,11 @@ import axios from 'axios';
 
 const NAV_ITEMS = [
   { path: '/',           icon: '📊', label: 'Tổng quan' },
-  { path: '/booking',   icon: '🛎️', label: 'Đặt phòng' },
-  { path: '/customers', icon: '👤', label: 'Khách hàng' },
+  { path: '/booking',    icon: '🛎️', label: 'Đặt phòng' },
+  { path: '/customers',  icon: '👤', label: 'Khách hàng' },
+  { path: '/reception',  icon: '🔑', label: 'Lễ tân' },
+  { path: '/room-types', icon: '🛏️', label: 'Loại phòng' },
+  { path: '/rooms',      icon: '🚪', label: 'Phòng ốc' },
 ];
 
 export default function Sidebar() {
@@ -40,7 +43,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div style={{ padding: '24px 20px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.5px' }}>
-          <span style={{ background: 'linear-gradient(135deg, #FFD700, #FF6B35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          <span style={{ background: 'linear-gradient(135deg, var(--gold), var(--orange))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             🏨 Grand Vietnam
           </span>
         </div>
@@ -59,9 +62,9 @@ export default function Sidebar() {
               padding: '11px 14px', borderRadius: 'var(--radius-sm)',
               textDecoration: 'none', marginBottom: 4,
               fontSize: '14px', fontWeight: isActive ? 600 : 400,
-              color: isActive ? '#FFD700' : 'var(--text-secondary)',
+              color: isActive ? 'var(--gold)' : 'var(--text-secondary)',
               background: isActive ? 'var(--gold-dim)' : 'transparent',
-              border: `1px solid ${isActive ? 'rgba(255,215,0,0.2)' : 'transparent'}`,
+              border: `1px solid ${isActive ? 'var(--gold-glow)' : 'transparent'}`,
               transition: 'all 0.15s',
             })}
           >

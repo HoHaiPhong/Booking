@@ -166,6 +166,16 @@ export default function Customers() {
                     <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{detail.khach.HoKhach} {detail.khach.TenKhach}</div>
                     <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>🪪 {detail.khach.SoPassport}</div>
                     {detail.khach.SoDienThoai && <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>📞 {detail.khach.SoDienThoai}</div>}
+                    <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                      <div style={{ flex: 1, padding: '8px 10px', background: 'var(--bg-card-2)', borderRadius: 6, border: '1px solid var(--border)' }}>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>💳 Thẻ tín dụng</div>
+                        <div style={{ fontSize: 13, fontWeight: 600 }}>{detail.khach.CreditCard ? `**** **** **** ${detail.khach.CreditCard.slice(-4)}` : '—'}</div>
+                      </div>
+                      <div style={{ flex: 1, padding: '8px 10px', background: 'var(--bg-card-2)', borderRadius: 6, border: '1px solid var(--border)' }}>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase' }}>⭐ Điểm tích lũy</div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--gold)' }}>{detail.khach.TheTichDiem || 0} pts</div>
+                      </div>
+                    </div>
                   </div>
                   <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14 }}>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 10 }}>

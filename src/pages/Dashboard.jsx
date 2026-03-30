@@ -12,6 +12,7 @@ const formatCurrency = (val) =>
 export default function Dashboard() {
   const [revenue, setRevenue] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [canceledTickets, setCanceledTickets] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -20,12 +21,14 @@ export default function Dashboard() {
       setLoading(true);
       setError('');
       try {
-        const [revRes, roomsRes] = await Promise.all([
+        const [revRes, roomsRes, canceledRes] = await Promise.all([
           axios.get(`${API}/dashboard/revenue`).catch(() => ({ data: { data: [] }})),
           axios.get(`${API}/dashboard/rooms-summary`).catch(() => ({ data: { data: [] }})),
+          axios.get(`${API}/dashboard/canceled-tickets-2025`).catch(() => ({ data: { data: 0 }})),
         ]);
         setRevenue(revRes.data.data || []);
         setRooms(roomsRes.data.data || []);
+        setCanceledTickets(canceledRes.data.data || 0);
       } catch (e) {
         setError('Không thể tải dữ liệu. Kiểm tra kết nối API server.');
       } finally {
@@ -51,7 +54,7 @@ export default function Dashboard() {
   });
   const chartData = Object.values(chartDataMap).slice(0, 6).reverse();
 
-  const miensColor = ['#FFD700', '#FF6B35', '#22c55e'];
+  const miensColor = ['#3b82f6', '#f59e0b', '#10b981']; // Xanh lam (Bắc), Vàng/Cam (Trung), Xanh lá (Nam)
   const miens = [...new Set(revenue.map((r) => r.MienKhuVuc))];
 
   if (loading) {
@@ -80,8 +83,8 @@ export default function Dashboard() {
         {rooms.length > 0 ? rooms.map((r) => (
           <div key={r.region} className="stat-card">
             <div className="stat-label">{r.label}</div>
-            <div className="stat-value">{r.soPhongTrong}</div>
-            <div className="stat-sub">phòng đang trống</div>
+            <div className="stat-value">{r.soKhachSan}</div>
+            <div className="stat-sub">khách sạn</div>
             <div className="stat-icon">{r.region === 'north' ? '🏔️' : r.region === 'central' ? '🌊' : '🌴'}</div>
             {r.status === 'offline' && (
               <div style={{ marginTop: 8, fontSize: 12, color: 'var(--red)' }}>⚠️ Server offline</div>
@@ -101,18 +104,23 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Doanh thu tổng theo miền */}
-      {Object.keys(revByRegion).length > 0 && (
-        <div className="stats-grid" style={{ marginBottom: 24 }}>
-          {Object.entries(revByRegion).map(([mien, total], i) => (
-            <div key={mien} className="stat-card">
-              <div className="stat-label">Doanh thu • {mien}</div>
-              <div className="stat-value" style={{ fontSize: '1.3rem' }}>{formatCurrency(total)}</div>
-              <div className="stat-sub">Tổng tất cả tháng</div>
-            </div>
-          ))}
+      {/* Doanh thu tổng theo miền & Các KPI khác */}
+      <div className="stats-grid" style={{ marginBottom: 24 }}>
+        {Object.entries(revByRegion).map(([mien, total], i) => (
+          <div key={mien} className="stat-card">
+            <div className="stat-label">Doanh thu • {mien}</div>
+            <div className="stat-value" style={{ fontSize: '1.3rem' }}>{formatCurrency(total)}</div>
+            <div className="stat-sub">Tổng tất cả tháng</div>
+          </div>
+        ))}
+        {/* KPI: Tổng phiếu hủy 2025 */}
+        <div className="stat-card" style={{ border: '1px solid rgba(239, 68, 68, 0.2)', background: 'rgba(239, 68, 68, 0.02)' }}>
+          <div className="stat-label" style={{ color: 'var(--red)' }}>Phiếu Đã Hủy (2025)</div>
+          <div className="stat-value" style={{ fontSize: '1.4rem', color: 'var(--red)' }}>{canceledTickets}</div>
+          <div className="stat-sub">Tổng hợp từ 3 trạm (Function)</div>
+          <div className="stat-icon">❌</div>
         </div>
-      )}
+      </div>
 
       {/* Biểu đồ doanh thu */}
       <div className="card">

@@ -12,11 +12,11 @@ router.get('/', async (req, res) => {
       try {
         const pool = await getPool(reg);
         const request = pool.request();
-        let query = 'SELECT MaKH, Passport FROM KhachHang';
+        let query = 'SELECT MaKH, Passport, HoTen, DienThoai FROM KhachHang';
         
         if (search) {
           request.input('search', sql.VarChar, `%${search}%`);
-          query += ' WHERE Passport LIKE @search OR MaKH LIKE @search';
+          query += ' WHERE Passport LIKE @search OR MaKH LIKE @search OR HoTen LIKE @search';
         }
         
         const result = await request.query(query);
@@ -24,8 +24,8 @@ router.get('/', async (req, res) => {
           MaKH:        row.MaKH,
           SoPassport:  row.Passport,
           HoKhach:     '',
-          TenKhach:    row.Passport,
-          SoDienThoai: null,
+          TenKhach:    row.HoTen || row.Passport, // Lấy HoTen, nếu null thì fallback Passport
+          SoDienThoai: row.DienThoai || null,
           region: reg
         }));
       } catch (e) {
@@ -96,12 +96,35 @@ router.get('/:passport', async (req, res) => {
     }));
 
     const lichSu = allBookings.flat().sort((a, b) => new Date(b.NgayDen) - new Date(a.NgayDen));
-    const khach = {
-      SoPassport:  passport,
-      HoKhach:     '',
-      TenKhach:    passport,
-      SoDienThoai: null
-    };
+    
+    // Tìm thông tin khách hàng từ vùng đầu tiên có dữ liệu
+    let khach = null;
+    for (const reg of regions) {
+      try {
+        const pool = await getPool(reg);
+        const result = await pool.request()
+          .input('passport', sql.VarChar, passport)
+          .query('SELECT MaKH, Passport, HoTen, DienThoai, CreditCard, TheTichDiem FROM KhachHang WHERE Passport = @passport');
+        
+        if (result.recordset.length > 0) {
+          const row = result.recordset[0];
+          khach = {
+            MaKH: row.MaKH,
+            SoPassport: row.Passport,
+            CreditCard: row.CreditCard,
+            TheTichDiem: row.TheTichDiem,
+            HoKhach: '', // Hệ thống hiện tại không dùng HoTen riêng
+            TenKhach: row.HoTen || row.Passport,
+            SoDienThoai: row.DienThoai || null
+          };
+          break;
+        }
+      } catch (e) {}
+    }
+
+    if (!khach) {
+      khach = { SoPassport: passport, TenKhach: passport };
+    }
 
     res.json({ data: { khach, lichSu } });
   } catch (err) {

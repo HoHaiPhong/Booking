@@ -67,17 +67,13 @@ router.get('/rooms-summary', async (req, res) => {
 
   const results = await Promise.all(regionalData.map(async (reg) => {
     try {
-      const roomResult = await queryWithRetry(reg.key, 'SELECT COUNT(*) as total FROM Phong');
-      const totalRooms = roomResult.recordset[0].total || 0;
+      const hotelResult = await queryWithRetry(reg.key, 'SELECT COUNT(*) as total FROM KhachSan');
+      const totalHotels = hotelResult.recordset[0].total || 0;
       
-      // Giả lập số phòng khả dụng (0.6 - 0.9 x totalRooms)
-      // Trong thực tế sẽ trừ đi số dòng trong Phiếu Đặt đang 'Đã đặt'
-      const mockAvailable = Math.max(0, Math.floor(totalRooms * (0.5 + Math.random() * 0.4)));
-
       return {
         region: reg.key,
         label: reg.label,
-        soPhongTrong: mockAvailable,
+        soKhachSan: totalHotels,
         status: 'online'
       };
     } catch (e) {
@@ -85,13 +81,39 @@ router.get('/rooms-summary', async (req, res) => {
       return {
         region: reg.key,
         label: reg.label,
-        soPhongTrong: 0,
+        soKhachSan: 0,
         status: 'offline'
       };
     }
   }));
 
   res.json({ data: results });
+});
+
+// API: Đếm Phiếu Đặt bị hủy trong năm 2025
+router.get('/canceled-tickets-2025', async (req, res) => {
+  const regions = ['north', 'central', 'south'];
+  let totalCanceled = 0;
+
+  // Thực thi trên từng Linked Server hoặc Trạm địa phương
+  await Promise.all(regions.map(async (reg) => {
+    try {
+      // Câu truy vấn tính COUNT trực tiếp.
+      // Nếu bạn có viết hàm Function trong SQL, hãy thay bằng: SELECT dbo.fn_DemPhieuHuy(2025) as count
+      const result = await queryWithRetry(reg, `
+        SELECT COUNT(*) as count 
+        FROM PhieuDat 
+        WHERE TrangThai = N'Đã hủy' AND YEAR(NgayDen) = 2025
+      `);
+      
+      const count = result.recordset[0].count || 0;
+      totalCanceled += count;
+    } catch (err) {
+      console.error(`[Dashboard/canceled] Lỗi đếm tại trạm ${reg}:`, err.message);
+    }
+  }));
+
+  res.json({ data: totalCanceled });
 });
 
 module.exports = router;

@@ -180,4 +180,43 @@ router.post('/create', async (req, res) => {
   }
 });
 
+// API: Tìm phòng thông minh (Gọi Stored Procedure usp_TraCuuPhongTrong)
+router.get('/search', async (req, res) => {
+  const { checkIn, checkOut, region } = req.query;
+  try {
+    const pool = await getPool(region); // Truy vấn xuống đúng trạm dựa vào param Region (BAC, TRUNG, NAM)
+    
+    // Thực thi SP: usp_TraCuuPhongTrong @NgayDen, @NgayDi, @KhuVuc
+    const result = await pool.request()
+      .input('NgayDen', sql.Date, checkIn)
+      .input('NgayDi', sql.Date, checkOut)
+      .input('KhuVuc', sql.NVarChar, region) // Trong SQL tham số KhuVuc nhận NVarChar, ta truyền mã region
+      .execute('usp_TraCuuPhongTrong');
+
+    // Cột mong đợi từ SP: TenKhachSan, TenLoaiPhong, SoLuongCon
+    res.json({ data: result.recordset });
+  } catch (err) {
+    console.error(`[Booking/search] Lỗi SP:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Lấy View phòng trống Sapa Miền Bắc
+router.get('/sapa-rooms', async (req, res) => {
+  try {
+    // Sapa thuộc Miền Bắc -> Kết nối pool North
+    const pool = await getPool('north');
+    
+    // Select toàn bộ View vw_PhongTrongSapa
+    const result = await pool.request()
+      .query('SELECT * FROM vw_PhongTrongSapa');
+      
+    // Cột từ View: MaPhong, SoPhong, MaLoai, MaKS (Ta format một chút nếu View trả về mã cứng)
+    res.json({ data: result.recordset });
+  } catch (err) {
+    console.error(`[Booking/sapa-rooms] Lỗi View Sapa:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

@@ -14,6 +14,9 @@ app.use(express.json());
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/booking', require('./routes/booking'));
 app.use('/api/customers', require('./routes/customers'));
+app.use('/api/room-types', require('./routes/room-types'));
+app.use('/api/reception', require('./routes/reception'));
+app.use('/api/rooms', require('./routes/rooms'));
 
 // ── Health Check ───────────────────────────────────────────
 app.get('/', (req, res) => {
